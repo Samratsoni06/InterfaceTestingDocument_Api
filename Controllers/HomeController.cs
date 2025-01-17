@@ -25,7 +25,7 @@ namespace InterfaceTestingDocument_Api.Controllers
             return StatusCode(500, response);
         }
 
-        [HttpPost]
+        [HttpPost("CreateOQC ")]
         public async Task<IActionResult> SaveOqcInspection([FromBody] OqcInspection queryable)
         {
             var response = await _testService.SaveOqcInspection(queryable);
