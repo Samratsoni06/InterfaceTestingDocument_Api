@@ -1,6 +1,5 @@
 ﻿using InterfaceTestingDocument_Api.Models;
 using InterfaceTestingDocument_Api.Repository;
-using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
 namespace InterfaceTestingDocument_Api.Controllers
@@ -23,7 +22,17 @@ namespace InterfaceTestingDocument_Api.Controllers
             {
                 return Ok(response);
             }
+            return StatusCode(500, response);
+        }
 
+        [HttpPost]
+        public async Task<IActionResult> SaveOqcInspection([FromBody] OqcInspection queryable)
+        {
+            var response = await _testService.SaveOqcInspection(queryable);
+            if (response.Success)
+            {
+                return Ok(response);
+            }
             return StatusCode(500, response);
         }
     }

@@ -10,6 +10,55 @@ namespace InterfaceTestingDocument_Api.Repository
         {
             _connectionString = connectionString;
         }
+        public async Task<bool> SaveOqcInspectionAsync(OqcInspection oqcInspection)
+        {
+            using (var con = new SqlConnection(_connectionString))
+            {
+                await con.OpenAsync();
+                using (var transaction = await con.BeginTransactionAsync())
+                {
+                    try
+                    {
+                        var insertQuery = "INSERT INTO TestResults (LotSnCode, StationCode, FailureReason, WorkCenter, IsPass, OrderNo, TestFrameidNo) " +
+                                          "OUTPUT INSERTED.Id " + // Capture the inserted Id
+                                          "VALUES (@LotSnCode, @StationCode, @FailureReason, @WorkCenter, @IsPass, @OrderNo, @TestFrameidNo)";
+
+                        int testResultId;
+                        using (var command = new SqlCommand(insertQuery, con, (SqlTransaction)transaction))
+                        {
+                            command.Parameters.AddWithValue("@LotSnCode", oqcInspection.InspectionNo);
+
+                            testResultId = (int)await command.ExecuteScalarAsync();
+                            if (testResultId <= 0)
+                            {
+                                throw new Exception("Failed to insert SRTestRequest and retrieve TestRequestId.");
+                            }
+                        }
+
+                        foreach (var testItem in oqcInspection.SnCodes)
+                        {
+                            var insertItemQuery = "INSERT INTO TestItems (TestResultId, ItemName, ItemResult, ItemStartTime, ItemEndTime, ItemDuration) " +
+                                                  "VALUES (@TestResultId, @ItemName, @ItemResult, @ItemStartTime, @ItemEndTime, @ItemDuration)";
+
+                            using (var command = new SqlCommand(insertItemQuery, con, (SqlTransaction)transaction))
+                            {
+                                command.Parameters.AddWithValue("@TestResultId", testResultId);
+
+                                await command.ExecuteNonQueryAsync();
+                            }
+                        }
+
+                        await transaction.CommitAsync();
+                        return true;
+                    }
+                    catch (Exception ex)
+                    {
+                        await transaction.RollbackAsync();
+                        return false;
+                    }
+                }
+            }
+        }
 
         public async Task<bool> SaveTestData(SRTestRequest request)
         {

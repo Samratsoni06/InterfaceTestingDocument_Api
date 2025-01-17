@@ -47,5 +47,42 @@ namespace InterfaceTestingDocument_Api.Repository
                 __abp = true
             };
         }
+        public async Task<ApiResponse> SaveOqcInspection(OqcInspection request)
+        {
+            if (request == null)
+            {
+                return new ApiResponse
+                {
+                    Success = false,
+                    Error = "Invalid request data.",
+                    UnAuthorizedRequest = false,
+                    __abp = true
+                };
+            }
+
+            var success = await _repository.SaveOqcInspectionAsync(request);
+            if (success)
+            {
+                return new ApiResponse
+                {
+                    Result = null,
+                    TargetUrl = null,
+                    Success = true,
+                    Error = null,
+                    UnAuthorizedRequest = false,
+                    __abp = true
+                };
+            }
+
+            return new ApiResponse
+            {
+                Result = null,
+                TargetUrl = null,
+                Success = false,
+                Error = "An error occurred while saving the data.",
+                UnAuthorizedRequest = false,
+                __abp = true
+            };
+        }
     }
 }
